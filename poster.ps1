@@ -1,3 +1,5 @@
+Set-Location $PSScriptRoot
+
 $culture = New-Object System.Globalization.CultureInfo('de')
 $date = (Get-Date).ToString("d._MMMM", $culture)
 
@@ -43,4 +45,4 @@ $abc = '{
 }'
 
 $hookUrl = Get-Content -Path '.\hook.url'
-#Invoke-RestMethod -Method post -ContentType 'Application/Json' -Body $abc -Uri $hookUrl
+Invoke-RestMethod -Method post -ContentType 'Application/Json' -Body $abc -Uri $hookUrl
