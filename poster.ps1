@@ -14,6 +14,29 @@ for($i = 0; $i -lt $sectionsPage.parse.sections.length; $i++){
     }
 }
 
+$uriGoogle = "https://google.de"
+$uriGoogleDoodle = "https://google.com/doodles"
+$pageGoogle = Invoke-RestMethod -Method get -Uri $uriGoogle
+if ($pageGoogle -match 'alt="([\w ]+)"') {
+    $ThereIsADoodle = $TRUE
+}
+if ($ThereIsADoodle -eq $TRUE) {
+    $doodleLine = ',{
+        "name": "Daily Doodle",
+        "value": "' + $Matches[1] + '"
+    }';
+    $doodlePotentialAction = ',{
+        "@type": "OpenUri",
+        "name": "Doodles @Google",
+        "targets": [{
+            "os": "default",
+            "uri": "' + $uriGoogleDoodle + '"
+        }]}'
+} else {
+    $doodleLine = '';
+    $doodlePotentialAction = ''
+}
+
 $uri = "https://de.wikipedia.org/w/api.php?action=parse&format=json&page={0}&prop=wikitext&section={1}&disabletoc=1" -f $date, $feierSection
 $textOrigin = ((Invoke-RestMethod -Method get -Uri $uri).parse.wikitext."*" -Split ("----"))[0].Replace("*", "- ").Replace("[", "*").Replace("]", "*")
 $text = ($textOrigin -Split " ==")[1]
@@ -31,7 +54,7 @@ $abc = '{
         "facts": [{
             "name": "' + $date.Replace("_", " ") + '",
             "value": "' + $text + '"
-        }],
+        }' + $doodleLine +'],
         "markdown": true
     }],
     "potentialAction": [{
@@ -41,7 +64,7 @@ $abc = '{
             "os": "default",
             "uri": "' + $wikiURL + '"
         }]
-    }]
+    }' + $doodlePotentialAction +']
 }'
 
 $hookUrl = Get-Content -Path '.\hook.url'
